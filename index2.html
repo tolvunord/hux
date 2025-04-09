@@ -194,26 +194,29 @@
         return;
       }
       
-      let html = `
-        <h2 class="mb-4">Registration Details for Auth Code: ${registration[authCodeHeader]}</h2>
-        <table class="table table-bordered table-striped">
-          <tbody>
-            <tr><th>Entry ID</th><td>${registration['Entry Id'] || ''}</td></tr>
-            <tr><th>Name of Primary Registrant</th><td>${registration['Name of primary registrant'] || ''}</td></tr>
-            <tr><th>Email</th><td>${registration['Email'] || ''}</td></tr>
-            <tr><th>Phone Number</th><td>${registration['Phone number'] || ''}</td></tr>
-            <tr><th>Family</th><td>${registration['Family'] || ''}</td></tr>
-            <tr><th>Country</th><td>${registration['Country'] || ''}</td></tr>
-            <tr><th>Club</th><td>${registration['Club number / location / name'] || ''}</td></tr>
-            <tr><th>Position</th><td>${registration['Position International, National, Club level'] || ''}</td></tr>
-            <tr><th>Pretour Details</th><td>${registration['Pretour C NEW – Golden Circle and the South coast. SOLD OUT, please contact svandri2@gmail.com to register to the waiting list'] || registration['Pretour A – The South coast. SOLD OUT'] || ''}</td></tr>
-            <tr><th>Main Program</th><td>${registration['Main program Due to high demand for this event the main hall at the Gala dinner is now full but seats are still available in a side hall'] || ''}</td></tr>
-            <tr><th>Off Venue Program</th><td>${registration['Off venue program'] || ''}</td></tr>
-            <tr><th>Date Created</th><td>${registration['Date Created'] || ''}</td></tr>
-            <tr><th>Total</th><td>${registration['TOTAL'] || ''}</td></tr>
-          </tbody>
-        </table>
-      `;
+      let html =  `
+  <div class="registration-details">
+    <h3 class="font-family-alt text-uppercase text-center mb-4" style="letter-spacing: 2px;">
+      Registration Details for Auth Key: ${registration.AuthCode}
+    </h3>
+    <div class="registration-item d-flex justify-content-between align-items-center mb-3">
+      <span class="registration-label font-weight-bold">Entry ID:</span>
+      <span class="registration-value">${registration["Entry Id"] || ''}</span>
+    </div>
+    <div class="registration-item d-flex justify-content-between align-items-center mb-3">
+      <span class="registration-label font-weight-bold">Primary Registrant:</span>
+      <span class="registration-value">${registration["Name of primary registrant"] || ''}</span>
+    </div>
+    <div class="registration-item d-flex justify-content-between align-items-center mb-3">
+      <span class="registration-label font-weight-bold">Email:</span>
+      <span class="registration-value">${registration.Email || ''}</span>
+    </div>
+    <div class="registration-item d-flex justify-content-between align-items-center mb-3">
+      <span class="registration-label font-weight-bold">Date Created:</span>
+      <span class="registration-value">${registration["Date Created"] || ''}</span>
+    </div>
+  </div>
+`;
       container.innerHTML = html;
     }
 
