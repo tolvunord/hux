@@ -41,13 +41,13 @@
   
   <!-- Custom inline styles (optional) -->
   <style type="text/css" id="custom-background-css">
-    body.custom-background {
-      background-image: url("https://wmagm.is/wp-content/uploads/2024/10/Vesturbaer_medium1600x910.jpg");
-      background-position: left top;
-      background-size: auto;
-      background-repeat: repeat;
-      background-attachment: scroll;
-    }
+body.custom-background {
+  background-image: url("https://wmagm.is/wp-content/uploads/2024/10/Vesturbaer_medium1600x910.jpg");
+  background-position: center top;
+  background-size: cover;         /* Make the image cover the viewport */
+  background-repeat: no-repeat;   /* Prevent tiling if you prefer a single image */
+  background-attachment: fixed;   /* Optionally fix the background in place */
+}
   </style>
 </head>
 <body class="home custom-background" id="page-top">
@@ -85,7 +85,7 @@
       <div class="page-section">
         <div class="container">
           <!-- Here you can place your custom HTML for the dashboard -->
-          <div id="dashboard-content" class="wpb-content-wrapper">
+          <div id="dashboard-content" class="wpb-content-wrapper"  style="padding-top:90px;">
             <!-- Your dynamic dashboard content (for example, data fetched via JS) will be injected here -->
             <h2 class="text-center">Your Dashboard Content</h2>
             <!-- Insert your JavaScript-driven dashboard code below -->
