@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - 41 International</title>
+  <!-- Link to your external stylesheet hosted on your main site (adjust path as needed) -->
+  <link rel="stylesheet" href="https://wmagm.is/css/main.css">
+  <!-- Optionally include your fonts if they are imported separately -->
+  <link rel="stylesheet" href="https://wmagm.is/css/fonts.css">
+  <!-- Any additional meta tags from your original site -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <!-- Header: Use the same markup as your main site for consistency -->
+  <header>
+    <nav class="navbar">
+      <div class="container">
+        <a class="navbar-brand" href="https://wmagm.is/">wmagm.is</a>
+        <!-- Include your original navigation items here -->
+        <ul class="navbar-nav">
+          <li class="nav-item"><a href="https://wmagm.is/about" class="nav-link">About</a></li>
+          <li class="nav-item"><a href="https://wmagm.is/contact" class="nav-link">Contact</a></li>
+          <!-- etc. -->
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container my-4">
+    <h2 class="mb-4">Registration Dashboard</h2>
+    <!-- Your dynamic dashboard content goes here -->
+    <div id="dashboard-content">
+      <!-- For instance, a table of registration data will be inserted dynamically by JS (see previous example code) -->
+    </div>
+  </main>
+
+  <!-- Footer: Replicate your site's footer -->
+  <footer class="footer bg-dark text-light py-3">
+    <div class="container">
+      <p class="mb-0">&copy; 2025 wmagm.is. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- If your site uses custom JS, you can link to it -->
+  <script src="https://wmagm.is/js/main.js"></script>
+  <!-- Place any additional inline scripts here, such as the Google Sheets API fetching code -->
+  <script>
+    // Example: Extract the auth key from the query string and load registration data.
+    function getAuthKeyFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("key");
+    }
+
+    function displayDashboard(registration) {
+      const container = document.getElementById('dashboard-content');
+      if (!registration) {
+        container.innerHTML = '<div class="alert alert-danger">No registration data found for this key.</div>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <h3>Registration Details for Auth Key: ${registration.AuthCode}</h3>
+        <table class="table table-striped">
+          <tbody>
+            <tr>
+              <th>Entry ID</th>
+              <td>${registration["Entry Id"] || ''}</td>
+            </tr>
+            <tr>
+              <th>Primary Registrant</th>
+              <td>${registration["Name of primary registrant"] || ''}</td>
+            </tr>
+            <tr>
+              <th>Email</th>
+              <td>${registration.Email || ''}</td>
+            </tr>
+            <!-- Additional rows as needed -->
+            <tr>
+              <th>Date Created</th>
+              <td>${registration["Date Created"] || ''}</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    // Your function to fetch and process the Google Sheets data would be inserted here.
+    // For example:
+    function fetchData(authKey) {
+      // Replace with your server/proxy URL if using one to hide the API key.
+      const sheetId = '1wZLrwfU4Yv0YqcZTC85m04DSlyIUGfAZP5QGu6ASzhU';
+      const apiKey = 'AIzaSyDMUFiF6kAxOT4vha6_yl-PQlHBswFpuF8';
+      const range = 'Data!A1:BG'; // Adjust as necessary
+
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          // Process the data into objects, find the matching row using 'authKey', then render.
+          // (Reuse the conversion function and data filtering logic from the previous example)
+          const headers = data.values[0];
+          const records = data.values.slice(1).map(row => {
+            let obj = {};
+            headers.forEach((header, i) => { obj[header] = row[i] || ''; });
+            return obj;
+          });
+          const registration = records.find(r => r.AuthCode && r.AuthCode.trim() === authKey);
+          displayDashboard(registration);
+        })
+        .catch(err => {
+          console.error("Error fetching data", err);
+          document.getElementById('dashboard-content').innerHTML =
+            '<div class="alert alert-danger">Error loading registration data.</div>';
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const authKey = getAuthKeyFromQuery();
+      if (authKey) {
+        fetchData(authKey);
+      } else {
+        document.getElementById('dashboard-content').innerHTML =
+          '<div class="alert alert-warning">No auth key provided.</div>';
+      }
+    });
+  </script>
+</body>
+</html>
