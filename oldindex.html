@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  connect-src 'self' https://sheets.googleapis.com;
+  style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+  ">
+  <title>Registration Dashboard</title>
+  <!-- Include Bootstrap 5 for styling -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; padding-top: 60px; }
+    .dashboard-container { max-width: 900px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <!-- Simple fixed navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">World Meeting | AGM 2025 Iceland</a>
+    </div>
+  </nav>
+
+  <div class="container dashboard-container my-4" id="dashboard-content">
+    <!-- The registration data will be injected here -->
+    <div class="text-center">
+      <div class="spinner-border" role="status" id="loader">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper (if needed) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ==== CONFIGURATION: Replace these placeholders with your actual values ====
+    const sheetId = '1wZLrwfU4Yv0YqcZTC85m04DSlyIUGfAZP5QGu6ASzhU'; // e.g., 1abcD_efGHIJKlmNOPQRstuVWXyz
+    const apiKey = 'AIzaSyDMUFiF6kAxOT4vha6_yl-PQlHBswFpuF8'; // Your Google API key with access to Google Sheets API
+    // Set the range where your data resides (headers in the first row).
+    // E.g., if your data is in "Sheet1" from A1 to Z100:
+    const range = 'Data!A1:BG';
+
+    // The name of the column header that holds the auth code.
+    const authCodeHeader = 'AuthCode';
+
+    // ==== End configuration ====
+
+    // Helper: Extract the auth code from the URL.
+    function getAuthCodeFromURL() {
+      // Assumes URL format: /dashboard/ABC123 (or similar)
+      const parts = window.location.pathname.split('/');
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i].trim() !== '') {
+          return parts[i].trim();
+        }
+      }
+      return null;
+    }
+    function getAuthCodeFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("session");
+    }
+
+    // Helper: Convert rows (array of arrays) into an array of objects using headers.
+    function rowsToObjects(data) {
+      if (!data || !data.values || data.values.length < 2) {
+        return [];
+      }
+      const headers = data.values[0];
+      return data.values.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((header, i) => {
+          obj[header] = row[i] || '';
+        });
+        return obj;
+      });
+    }
+
+    // Function: Render the registration details in a table.
+    function renderDashboard(registration) {
+      const container = document.getElementById('dashboard-content');
+      if (!registration) {
+        container.innerHTML = `<div class="alert alert-danger" role="alert">
+          No registration data found for this authentication code.
+        </div>`;
+        return;
+      }
+      
+      let html = `
+        <h2 class="mb-4">Registration Details for ${registration['Name of primary registrant'] || ''}</h2>
+        <table class="table table-bordered table-striped">
+          <tbody>
+            <tr><th>Entry ID</th><td>${registration['Entry Id'] || ''}</td></tr>
+            <tr><th>Name of Primary Registrant</th><td>${registration['Name of primary registrant'] || ''}</td></tr>
+            <tr><th>Email</th><td>${registration['Email'] || ''}</td></tr>
+            <tr><th>Phone Number</th><td>${registration['Phone number'] || ''}</td></tr>
+            <tr><th>Family</th><td>${registration['Family'] || ''}</td></tr>
+            <tr><th>Country</th><td>${registration['Country'] || ''}</td></tr>
+            <tr><th>Club</th><td>${registration['Club number / location / name'] || ''}</td></tr>
+            <tr><th>Position</th><td>${registration['Position International, National, Club level'] || ''}</td></tr>
+            <tr><th>Pretour Details</th><td>${registration['Pretour C NEW – Golden Circle and the South coast. SOLD OUT, please contact svandri2@gmail.com to register to the waiting list'] || registration['Pretour A – The South coast. SOLD OUT'] || ''}</td></tr>
+            <tr><th>Main Program</th><td>${registration['Main program Due to high demand for this event the main hall at the Gala dinner is now full but seats are still available in a side hall'] || ''}</td></tr>
+            <tr><th>Off Venue Program</th><td>${registration['Off venue program'] || ''}</td></tr>
+            <tr><th>Date Created</th><td>${registration['Date Created'] || ''}</td></tr>
+            <tr><th>Total</th><td>${registration['TOTAL'] || ''}</td></tr>
+          </tbody>
+        </table>
+      `;
+      container.innerHTML = html;
+    }
+
+    // Function to fetch sheet data via Google Sheets API.
+    function fetchSheetData(authCode) {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      console.log('Requesting URL: ' + url);
+      
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Convert raw rows to objects
+          const records = rowsToObjects(data);
+          // Filter records where the auth code matches
+          const registration = records.find(record => record[authCodeHeader] && record[authCodeHeader].trim() === authCode);
+          renderDashboard(registration);
+        })
+        .catch(error => {
+          console.error("Error fetching sheet data:", error);
+          document.getElementById('dashboard-content').innerHTML =
+            `<div class="alert alert-danger" role="alert">Error retrieving data.</div>`;
+        });
+    }
+
+    // On DOM load, extract auth code and fetch data.
+    document.addEventListener('DOMContentLoaded', () => {
+      const authCode = getAuthCodeFromQuery();
+      if (!authCode) {
+        document.getElementById('dashboard-content').innerHTML =
+          `<div class="alert alert-warning" role="alert">No authentication code provided in the URL.</div>`;
+        return;
+      }
+      fetchSheetData(authCode);
+    });
+  </script>
+</body>
+</html>
